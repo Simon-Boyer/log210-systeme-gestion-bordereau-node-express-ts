@@ -4,15 +4,43 @@ services:
   log210-sgb:
     build: ./log210-systeme-gestion-bordereau-node-express-ts
     restart: always
-    environment:
-      - VIRTUAL_HOST=sgb.log210.codegameeat.com
-      - VIRTUAL_PORT=3200
     ports:
       - 3200:3200
     networks:
-      - proxy-tier
-      - default
+      - internal
+      - traefik_public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == HOMESERVER]
+      labels:
+        # traefik
+        - traefik.enable=true
+        - traefik.docker.network=traefik_public
+
+        # traefikv1
+        #- traefik.frontend.rule=Host:portainer.codegameeat.com
+        #- traefik.port=9000
+        # uncomment if you want to protect portainer with traefik-forward-auth using traefikv1
+        # - traefik.frontend.auth.forward.address=http://traefik-forward-auth:4181
+        # - traefik.frontend.auth.forward.authResponseHeaders=X-Forwarded-User
+        # - traefik.frontend.auth.forward.trustForwardHeader=true
+
+        # traefikv2
+        - "traefik.http.routers.log210-sgb.rule=Host(`sgb.log210.codegameeat.com`)"
+        - "traefik.http.routers.log210-sgb.entrypoints=https"
+        - "traefik.http.routers.log210-sgb.tls=true"
+        - "traefic.http.routers.log210-sgb.tls.certresolver=le"
+        - "traefik.http.services.log210-sgb.loadbalancer.server.port=3200"
+        # uncomment if you want to protect portainer with traefik-forward-auth using traefikv2
+        # - "traefik.http.routers.portainer.middlewares=forward-auth"
 
 networks:
-  proxy-tier:
-    name: proxy_net
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.13.0/24
