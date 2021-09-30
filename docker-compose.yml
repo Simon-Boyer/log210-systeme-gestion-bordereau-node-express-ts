@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   log210-sgb:
-    build: ./log210-systeme-gestion-bordereau-node-express-ts
+    image: log210-sgb:latest
     restart: always
     ports:
       - 3200:3200
