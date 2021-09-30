@@ -1,0 +1,18 @@
+version: '3.5'
+
+services:
+  log210-sgb:
+    build: ./log210-systeme-gestion-bordereau-node-express-ts
+    restart: always
+    environment:
+      - VIRTUAL_HOST=sgb.log210.codegameeat.com
+      - VIRTUAL_PORT=3200
+    ports:
+      - 3200:3200
+    networks:
+      - proxy-tier
+      - default
+
+networks:
+  proxy-tier:
+    name: proxy_net
